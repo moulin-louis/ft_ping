@@ -49,4 +49,5 @@ add_library(ft STATIC src/ft_atoi.c
         src/ft_lstsize.c
         src/clean_split.c
         src/ft_lstfilter.c
-        src/ft_lstsort.c)
+        src/ft_lstsort.c
+        src/hexdump.c)

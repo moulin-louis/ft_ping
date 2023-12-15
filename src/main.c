@@ -54,7 +54,7 @@ int main(const int ac, char **av) {
   const int retval = parse_arg(av);
   if (retval == 1)
     return 0;
-  for (int32_t idx = 0; idx < ac; idx++) {
+  for (int32_t idx = 1; idx < ac; idx++) {
     if (av[idx]) {
       ping_init();
       ping_echo(av[idx], option);

@@ -27,22 +27,23 @@ static uint16_t checksum(uint16_t *addr, const int len) {
 static int setup_dest() {
   struct addrinfo hints;
   struct addrinfo *result;
+
   ft_memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_RAW;
-  hints.ai_protocol = IPPROTO_ICMP;
+  printf("hostname: %s\n", ping.hostname);
   int retval = getaddrinfo(ping.hostname, NULL, &hints, &result);
   if (retval != 0) {
     printf("Error: getaddrinfo() failed: %s\n", gai_strerror(retval));
     exit(1);
   }
-  struct sockaddr_in *sockaddr_in = (struct sockaddr_in *)result->ai_addr;
-  ping.dest = *(sockaddr*)sockaddr_in;
+  ft_memcpy(&ping.dest, result->ai_addr, sizeof(ping.dest));
+  printf("ip addres = %s\n", inet_ntoa(((struct sockaddr_in *)&ping.dest)->sin_addr));
+  freeaddrinfo(result);
   return 0;
 }
 
 static int ping_send(const icmphdr* icmp_header) {
-  (void)icmp_header;
   ssize_t retval = sendto(ping.fd, icmp_header, sizeof(*icmp_header), 0, &ping.dest, sizeof(ping.dest));
   if (retval < 0) {
     printf("Error: sendto() failed: %s\n", strerror(errno));
@@ -63,19 +64,27 @@ int ping_echo(char *hostname, int option) {
   ping.dest.sa_family = AF_INET;
   ping.ident = getpid();
   setup_dest();
+  const pid_t pid = getpid();
   while (true) {
     icmphdr icmp_header;
     ft_memset(&icmp_header, 0, sizeof(icmp_header));
     icmp_header.type = ICMP_ECHO;
     icmp_header.code = 0;
-    icmp_header.un.echo.id = htonl(getpid());
-    icmp_header.un.echo.sequence = htonl(ping.num_emit);
+    // dprintf(1, "BEFORE WRITING UNIIN:\n");
+    // hexdump(&icmp_header, sizeof(icmp_header),0);
+    printf("htonl pid = %d\n", htons(pid));
+    icmp_header.id = htons(pid);
+    // dprintf(1, "AFTEr WRITING UNIIN:\n");
+    // hexdump(&icmp_header, sizeof(icmp_header),0);
+    icmp_header.seq = htons(ping.num_emit);
     icmp_header.checksum = 0;
     icmp_header.checksum = checksum((uint16_t *)&icmp_header, sizeof(icmp_header));
+    dprintf(1, "BEFORE SENDING:\n");
+    hexdump(&icmp_header, sizeof(icmp_header),0);
     ping_send(&icmp_header);
     ping.num_emit += 1;
     ping_recv();
-    break;
+    sleep(1);
   }
 
   return 0;
