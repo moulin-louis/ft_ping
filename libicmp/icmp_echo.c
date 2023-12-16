@@ -51,8 +51,7 @@ icmp_generic_encode (unsigned char * buffer, size_t bufsize, int type, int ident
 }
 
 int
-icmp_generic_decode (unsigned char * buffer, size_t bufsize,
-		     struct ip **ipp, icmphdr_t ** icmpp)
+icmp_generic_decode (unsigned char * buffer, size_t bufsize, struct ip **ipp, icmphdr_t ** icmpp)
 {
   size_t hlen;
   unsigned short cksum;

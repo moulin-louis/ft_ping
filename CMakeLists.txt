@@ -8,5 +8,6 @@ add_compile_options(-Wall -Werror -Wextra)
 include_directories(./inc src/libft/inc)
 add_executable(ft_ping src/main.c
         inc/ft_ping.h
-        src/echo.c)
+        src/echo.c
+        src/utils.c)
 target_link_libraries(ft_ping ft)

@@ -15,11 +15,17 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
+#include <signal.h>
+#include <sys/time.h>
 #define MAXWAIT 10
 #define OPT_VERBOSE 0x020
 
 int ping_echo(char* hostname, int option);
+double	get_diff_time(const struct timeval* start, const struct timeval* end);
+void sig_handler(const int signal);
+
+extern volatile char stop;
+extern  bool timeout;
 
 typedef struct timeval timeval;
 typedef struct sockaddr sockaddr;
@@ -29,17 +35,22 @@ typedef struct {
   int type;
   size_t ping_count;
   timeval start_time;
+  timeval old_time;
+  timeval current_time;
   size_t interval;
   sockaddr dest;
   char* hostname;
+  char ip[INET_ADDRSTRLEN];
   size_t datalen;
-  size_t ident;
-  sockaddr from;
+  uint16_t ident;
+  struct msghdr msg;
+  int32_t ttl;
   size_t num_emit;
   size_t num_recv;
   size_t num_rept;
 } ping_t;
 
+extern ping_t ping;
 typedef struct {
   uint8_t type;
   uint8_t code;
@@ -47,7 +58,5 @@ typedef struct {
   uint16_t id;
   uint16_t seq;
 } icmphdr;
-
-extern ping_t ping;
 
 #endif //FT_PING_H

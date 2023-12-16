@@ -43,11 +43,9 @@
 
 static int useless_ident = 0; /* Relevant at least for Linux.  */
 
-static size_t _ping_packetsize(PING *p);
+static size_t _ping_packetsize(PING* p);
 
-size_t
-_ping_packetsize(PING *p)
-{
+size_t _ping_packetsize(PING* p) {
   if (p->ping_type == ICMP_TIMESTAMP || p->ping_type == ICMP_TIMESTAMPREPLY)
     return ICMP_TSLEN;
 
@@ -57,26 +55,21 @@ _ping_packetsize(PING *p)
   return PING_HEADER_LEN + p->ping_datalen;
 }
 
-PING *
-ping_init(int type, int ident)
-{
+PING* ping_init(int type, int ident) {
   int fd;
-  struct protoent *proto;
-  PING *p;
+  struct protoent* proto;
+  PING* p;
 
   /* Initialize raw ICMP socket */
   proto = getprotobyname("icmp");
-  if (!proto)
-  {
+  if (!proto) {
     fprintf(stderr, "ping: unknown protocol icmp.\n");
     return NULL;
   }
 
   fd = socket(AF_INET, SOCK_RAW, proto->p_proto);
-  if (fd < 0)
-  {
-    if (errno == EPERM || errno == EACCES)
-    {
+  if (fd < 0) {
+    if (errno == EPERM || errno == EACCES) {
       errno = 0;
 
       /* At least Linux can allow subprivileged users to send ICMP
@@ -84,8 +77,7 @@ ping_init(int type, int ident)
        * but then the identity number is set by the kernel itself.
        */
       fd = socket(AF_INET, SOCK_DGRAM, proto->p_proto);
-      if (fd < 0)
-      {
+      if (fd < 0) {
         if (errno == EPERM || errno == EACCES || errno == EPROTONOSUPPORT)
           fprintf(stderr, "ping: Lacking privilege for icmp socket.\n");
         else
@@ -102,8 +94,7 @@ ping_init(int type, int ident)
 
   /* Allocate PING structure and initialize it to default values */
   p = malloc(sizeof(*p));
-  if (!p)
-  {
+  if (!p) {
     close(fd);
     return p;
   }
@@ -122,20 +113,17 @@ ping_init(int type, int ident)
   return p;
 }
 
-void ping_reset(PING *p)
-{
+void ping_reset(PING* p) {
   p->ping_num_xmit = 0;
   p->ping_num_recv = 0;
   p->ping_num_rept = 0;
 }
 
-void ping_set_type(PING *p, int type)
-{
+void ping_set_type(PING* p, int type) {
   p->ping_type = type;
 }
 
-int ping_xmit(PING *p)
-{
+int ping_xmit(PING* p) {
   int i, buflen;
 
   if (_ping_setbuf(p, USE_IPV6))
@@ -147,35 +135,28 @@ int ping_xmit(PING *p)
   _PING_CLR(p, p->ping_num_xmit);
 
   /* Encode ICMP header */
-  switch (p->ping_type)
-  {
-  case ICMP_ECHO:
-    icmp_echo_encode(p->ping_buffer, buflen, p->ping_ident,
-                     p->ping_num_xmit);
-    break;
+  switch (p->ping_type) {
+    case ICMP_ECHO:
+      icmp_echo_encode(p->ping_buffer, buflen, p->ping_ident, p->ping_num_xmit);
+      break;
 
-  case ICMP_TIMESTAMP:
-    icmp_timestamp_encode(p->ping_buffer, buflen, p->ping_ident,
-                          p->ping_num_xmit);
-    break;
+    case ICMP_TIMESTAMP:
+      icmp_timestamp_encode(p->ping_buffer, buflen, p->ping_ident, p->ping_num_xmit);
+      break;
 
-  case ICMP_ADDRESS:
-    icmp_address_encode(p->ping_buffer, buflen, p->ping_ident,
-                        p->ping_num_xmit);
-    break;
+    case ICMP_ADDRESS:
+      icmp_address_encode(p->ping_buffer, buflen, p->ping_ident, p->ping_num_xmit);
+      break;
 
-  default:
-    icmp_generic_encode(p->ping_buffer, buflen, p->ping_type,
-                        p->ping_ident, p->ping_num_xmit);
-    break;
+    default:
+      icmp_generic_encode(p->ping_buffer, buflen, p->ping_type, p->ping_ident, p->ping_num_xmit);
+      break;
   }
 
-  i = sendto(p->ping_fd, (char *)p->ping_buffer, buflen, 0,
-             (struct sockaddr *)&p->ping_dest.ping_sockaddr, sizeof(struct sockaddr_in));
+  i = sendto(p->ping_fd, (char *)p->ping_buffer, buflen, 0, (struct sockaddr *)&p->ping_dest.ping_sockaddr, sizeof(struct sockaddr_in));
   if (i < 0)
     return -1;
-  else
-  {
+else {
     p->ping_num_xmit++;
     if (i != buflen)
       printf("ping: wrote %s %d chars, ret=%d\n",
@@ -184,103 +165,84 @@ int ping_xmit(PING *p)
   return 0;
 }
 
-static int
-my_echo_reply(PING *p, icmphdr_t *icmp)
-{
-  struct ip *orig_ip = &icmp->icmp_ip;
-  icmphdr_t *orig_icmp = (icmphdr_t *)(orig_ip + 1);
+static int my_echo_reply(PING* p, icmphdr_t* icmp) {
+  struct ip* orig_ip = &icmp->icmp_ip;
+  icmphdr_t* orig_icmp = (icmphdr_t *)(orig_ip + 1);
 
-  return (orig_ip->ip_dst.s_addr == p->ping_dest.ping_sockaddr.sin_addr.s_addr && orig_ip->ip_p == IPPROTO_ICMP && orig_icmp->icmp_type == ICMP_ECHO && (ntohs(orig_icmp->icmp_id) == p->ping_ident || useless_ident));
+  return (orig_ip->ip_dst.s_addr == p->ping_dest.ping_sockaddr.sin_addr.s_addr && orig_ip->ip_p == IPPROTO_ICMP &&
+          orig_icmp->icmp_type == ICMP_ECHO && (ntohs(orig_icmp->icmp_id) == p->ping_ident || useless_ident));
 }
 
-int ping_recv(PING *p)
-{
+int ping_recv(PING* p) {
   socklen_t fromlen = sizeof(p->ping_from.ping_sockaddr);
   int n, rc;
-  icmphdr_t *icmp;
-  struct ip *ip;
+  icmphdr_t* icmp;
+  struct ip* ip;
   int dupflag;
 
-  n = recvfrom(p->ping_fd,
-               (char *)p->ping_buffer, _PING_BUFLEN(p, USE_IPV6), 0,
-               (struct sockaddr *)&p->ping_from.ping_sockaddr, &fromlen);
+  n = recvfrom(p->ping_fd, (char *)p->ping_buffer, _PING_BUFLEN(p, USE_IPV6), 0, (struct sockaddr *)&p->ping_from.ping_sockaddr, &fromlen);
   if (n < 0)
     return -1;
 
   rc = icmp_generic_decode(p->ping_buffer, n, &ip, &icmp);
-  if (rc < 0)
-  {
+  if (rc < 0) {
     /*FIXME: conditional */
-    fprintf(stderr, "packet too short (%d bytes) from %s\n", n,
-            inet_ntoa(p->ping_from.ping_sockaddr.sin_addr));
+    fprintf(stderr, "packet too short (%d bytes) from %s\n", n, inet_ntoa(p->ping_from.ping_sockaddr.sin_addr));
     return -1;
   }
 
-  switch (icmp->icmp_type)
-  {
-  case ICMP_ECHOREPLY:
-  case ICMP_TIMESTAMPREPLY:
-  case ICMP_ADDRESSREPLY:
-    /*    case ICMP_ROUTERADV: */
+  switch (icmp->icmp_type) {
+    case ICMP_ECHOREPLY:
+    case ICMP_TIMESTAMPREPLY:
+    case ICMP_ADDRESSREPLY:
+      /*    case ICMP_ROUTERADV: */
 
-    if (ntohs(icmp->icmp_id) != p->ping_ident && useless_ident == 0)
+      if (ntohs(icmp->icmp_id) != p->ping_ident && useless_ident == 0)
+        return -1;
+
+      if (rc)
+        fprintf(stderr, "checksum mismatch from %s\n", inet_ntoa(p->ping_from.ping_sockaddr.sin_addr));
+
+      p->ping_num_recv++;
+      if (_PING_TST(p, ntohs(icmp->icmp_seq))) {
+        p->ping_num_rept++;
+        p->ping_num_recv--;
+        dupflag = 1;
+      }
+      else {
+        _PING_SET(p, ntohs(icmp->icmp_seq));
+        dupflag = 0;
+      }
+
+      if (p->ping_event.handler)
+        (*p->ping_event.handler)(dupflag ? PEV_DUPLICATE : PEV_RESPONSE, p->ping_closure, &p->ping_dest.ping_sockaddr, &p->ping_from.ping_sockaddr, ip, icmp, n);
+      break;
+
+    case ICMP_ECHO:
+    case ICMP_TIMESTAMP:
+    case ICMP_ADDRESS:
       return -1;
 
-    if (rc)
-      fprintf(stderr, "checksum mismatch from %s\n",
-              inet_ntoa(p->ping_from.ping_sockaddr.sin_addr));
+    default:
+      if (!my_echo_reply(p, icmp))
+        return -1;
 
-    p->ping_num_recv++;
-    if (_PING_TST(p, ntohs(icmp->icmp_seq)))
-    {
-      p->ping_num_rept++;
-      p->ping_num_recv--;
-      dupflag = 1;
-    }
-    else
-    {
-      _PING_SET(p, ntohs(icmp->icmp_seq));
-      dupflag = 0;
-    }
-
-    if (p->ping_event.handler)
-      (*p->ping_event.handler)(dupflag ? PEV_DUPLICATE : PEV_RESPONSE,
-                               p->ping_closure,
-                               &p->ping_dest.ping_sockaddr,
-                               &p->ping_from.ping_sockaddr, ip, icmp, n);
-    break;
-
-  case ICMP_ECHO:
-  case ICMP_TIMESTAMP:
-  case ICMP_ADDRESS:
-    return -1;
-
-  default:
-    if (!my_echo_reply(p, icmp))
-      return -1;
-
-    if (p->ping_event.handler)
-      (*p->ping_event.handler)(PEV_NOECHO,
-                               p->ping_closure,
-                               &p->ping_dest.ping_sockaddr,
-                               &p->ping_from.ping_sockaddr, ip, icmp, n);
+      if (p->ping_event.handler)
+        (*p->ping_event.handler)(PEV_NOECHO, p->ping_closure, &p->ping_dest.ping_sockaddr, &p->ping_from.ping_sockaddr, ip, icmp, n);
   }
   return 0;
 }
 
-void ping_set_event_handler(PING *ping, ping_efp pf, void *closure)
-{
+void ping_set_event_handler(PING* ping, ping_efp pf, void* closure) {
   ping->ping_event.handler = pf;
   ping->ping_closure = closure;
 }
 
-void ping_set_packetsize(PING *ping, size_t size)
-{
+void ping_set_packetsize(PING* ping, size_t size) {
   ping->ping_datalen = size;
 }
 
-int ping_set_dest(PING *ping, const char *host)
-{
+int ping_set_dest(PING* ping, const char* host) {
 #if HAVE_DECL_GETADDRINFO
   int rc;
   struct addrinfo hints, *res;
@@ -328,16 +290,15 @@ int ping_set_dest(PING *ping, const char *host)
   return 0;
 #else /* !HAVE_DECL_GETADDRINFO */
 
-  struct sockaddr_in *s_in = &ping->ping_dest.ping_sockaddr;
+  struct sockaddr_in* s_in = &ping->ping_dest.ping_sockaddr;
   s_in->sin_family = AF_INET;
 #ifdef HAVE_STRUCT_SOCKADDR_IN_SIN_LEN
   s_in->sin_len = sizeof(*s_in);
 #endif
   if (inet_aton(host, &s_in->sin_addr))
     ping->ping_hostname = strdup(host);
-  else
-  {
-    struct hostent *hp;
+  else {
+    struct hostent* hp;
 #if defined HAVE_IDN || defined HAVE_IDN2
     char *rhost;
     int rc;
