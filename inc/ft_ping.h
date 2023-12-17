@@ -17,15 +17,9 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <sys/time.h>
+
 #define MAXWAIT 10
 #define OPT_VERBOSE 0x020
-
-int ping_echo(char* hostname, int option);
-double	get_diff_time(const struct timeval* start, const struct timeval* end);
-void sig_handler(const int signal);
-
-extern volatile char stop;
-extern  bool timeout;
 
 typedef struct timeval timeval;
 typedef struct sockaddr sockaddr;
@@ -50,7 +44,6 @@ typedef struct {
   size_t num_rept;
 } ping_t;
 
-extern ping_t ping;
 typedef struct {
   uint8_t type;
   uint8_t code;
@@ -58,5 +51,19 @@ typedef struct {
   uint16_t id;
   uint16_t seq;
 } icmphdr;
+
+extern ping_t ping;
+extern volatile char stop;
+extern bool timeout;
+
+int ping_echo(char* hostname, int option);
+
+double get_diff_time(const timeval* s1, const timeval* s2);
+
+void sig_handler(int signal);
+
+uint16_t checksum(uint16_t* addr);
+
+int32_t icmp_decode(const uint8_t* buf, size_t len, icmphdr** header, struct ip** ip);
 
 #endif //FT_PING_H

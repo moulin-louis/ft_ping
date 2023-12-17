@@ -12,6 +12,7 @@ clean:
 
 fclean:
 	rm -rf ./cmake-build-debug
+	rm -rf ./ft_ping
 
 re:			fclean all
 

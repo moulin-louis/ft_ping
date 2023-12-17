@@ -30,7 +30,7 @@ static void display_help() {
   printf("  -?, --help\t\tgive this help list\n\n");
 }
 
-static int parse_arg(char **av) {
+static int parse_arg(char** av) {
   for (uint32_t idx = 1; av[idx]; idx++) {
     if (ft_strcmp(av[idx], "-?") == 0 || ft_strcmp(av[idx], "--help") == 0) {
       display_help();
@@ -54,16 +54,17 @@ static void ping_init(void) {
   const int ph = 0;
   ping.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
   if (ping.fd < 0) {
-    printf("Error: socket() failed: %s\n", strerror(errno));
+    printf("./ft_ping: %s\n", strerror(errno));
     exit(1);
   }
-  if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST,&ph, sizeof(ph))) {
-    printf("setsockopt SO_BROADCAST: %s\n", strerror(errno));
+  if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST, &ph, sizeof(ph))) {
+    printf("./ft_ping: %s\n", strerror(errno));
+    close(ping.fd);
     exit(1);
   }
 }
 
-int main(const int ac, char **av) {
+int main(const int ac, char** av) {
   if (ac == 1) {
     fprintf(stderr, "ft_ping: missing host operand\n");
     fprintf(stderr, "Try 'ft_ping -?' for more information.\n");
