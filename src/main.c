@@ -45,23 +45,23 @@ static int parse_arg(char** av) {
 }
 
 static void ping_finish(void) {
+  const double stddev = ping.sumq / (ping.num_recv + ping.num_rept) - ping.avg * ping.avg;
+
   printf("--- %s ping statistics ---\n", ping.hostname);
   printf("%zu packets transmitted, %zu packets received, %zu%% packet loss\n",
          ping.num_emit, ping.num_recv, (ping.num_emit - ping.num_recv) * 100 / ping.num_emit);
+  if (ping.num_recv)
+    printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n",
+         ping.min, ping.avg, ping.max, nsqrt(stddev, 0.0005));
 }
 
 static void ping_init(void) {
   const int ph = 0;
   ping.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-  if (ping.fd < 0) {
-    printf("./ft_ping: %s\n", strerror(errno));
-    exit(1);
-  }
-  if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST, &ph, sizeof(ph))) {
-    printf("./ft_ping: %s\n", strerror(errno));
-    close(ping.fd);
-    exit(1);
-  }
+  if (ping.fd < 0)
+    exit_error(NULL);
+  if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST, &ph, sizeof(ph)))
+    exit_error(NULL);
 }
 
 int main(const int ac, char** av) {
@@ -71,6 +71,7 @@ int main(const int ac, char** av) {
     return 1;
   }
   ft_memset(&ping, 0, sizeof(ping));
+  ping.min = MAXWAIT + 10;
   const int retval = parse_arg(av);
   if (retval == 1)
     return 0;
