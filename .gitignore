@@ -54,3 +54,6 @@ dkms.conf
 #other stuff
 cmake-build-debug
 .idea
+
+ping
+libicmp
