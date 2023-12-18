@@ -76,7 +76,8 @@ int32_t ip_to_hostname(const char* ip, char* result_str) {
 
 void exit_error(const char* msg) {
   fprintf(stderr, "./ft_ping: %s\n", msg ? msg : strerror(errno));
-  close(ping.fd);
+  if (ping.fd)
+    close(ping.fd);
   exit(1);
 }
 
@@ -106,7 +107,9 @@ void icmp_hexdump(void *data, const size_t len) {
     printf ("%02x%s", *((unsigned char *) data + j), (j % 2) ? " " : "");	/* Group bytes two by two.  */
 }
 
-void icmp_error_log(struct ip* ip, const icmphdr* header) {
+void icmp_error_log() {
+  struct ip* ip = (struct ip*)&ping.packet;
+  icmphdr* header = (icmphdr*)(ping.packet + sizeof(struct ip));
   size_t hlen = ip->ip_hl << 2;
   const uint8_t* cp = (uint8_t*)header;
   printf("IP Hdr Dump:\n ");

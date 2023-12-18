@@ -16,6 +16,7 @@
 #include <sys/time.h>
 # include <netinet/in_systm.h>
 #include <netinet/ip.h>
+#include <fcntl.h>
 
 #define ICMP_MINLEN 8
 #define ICMP_ECHO 8
@@ -100,14 +101,17 @@ typedef struct {
   int fd; // file descriptor of the socket
   uint16_t ident; // identifier for the icmp header
   sockaddr dest; // destination of the packet
+  sockaddr srcl; // source of the packet
   char* hostname; // hostname of the destination in string format
   char ip[INET_ADDRSTRLEN]; // ip address of the destination in string format
   struct msghdr msg; // message received for rcvmsg
   size_t datalen; // size of the data received
-  int32_t ttl; // time to live in the packet header received
+  int32_t sys_ttl; // time to live of the system
+  int32_t recv_ttl; // time to live in the packet header received
   timeval current_time; // current time
   timeval old_time; // time before sending the packet
   icmphdr icmp_header; // icmp header
+  uint8_t packet[sizeof(icmphdr) + sizeof(struct ip) + 8];
   double min; // min of the diffMS
   double max; // max of the diffMS
   double avg; // average of the diffMS
@@ -139,6 +143,8 @@ int32_t ip_to_hostname(const char* ip, char* result_str);
 
 double nsqrt(double a, double prec);
 
-void icmp_error_log(struct ip* ip, const icmphdr* header);
+void icmp_error_log();
+
+void icmp_hexdump(void *data, const size_t len);
 
 #endif //FT_PING_H

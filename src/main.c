@@ -56,12 +56,28 @@ static void ping_finish(void) {
 }
 
 static void ping_init(void) {
-  const int ph = 0;
+  const int ph = 1;
   ping.fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
   if (ping.fd < 0)
     exit_error(NULL);
   if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST, &ph, sizeof(ph)))
     exit_error(NULL);
+  //enable ip header
+  if (setsockopt(ping.fd, IPPROTO_IP, IP_HDRINCL, &ph, sizeof(ph)))
+    exit_error(NULL);
+  const int32_t fd = open("/proc/sys/net/ipv4/ip_default_ttl", O_RDONLY);
+  if (fd < 0)
+    exit_error(NULL);
+  char buf[1024];
+  const ssize_t len = read(fd, buf, sizeof(buf));
+  close(fd);
+  if (len < 0)
+    exit_error(NULL);
+  buf[len] = 0;
+  ping.sys_ttl = ft_atoi(buf);
+  if (ping.sys_ttl == -1)
+    exit_error("Atoi error");
+
 }
 
 int main(const int ac, char** av) {
