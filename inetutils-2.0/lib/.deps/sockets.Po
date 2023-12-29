@@ -1,0 +1,7 @@
+sockets.o: sockets.c /usr/include/stdc-predef.h ../config.h \
+ ../confpaths.h /usr/include/paths.h sockets.h
+/usr/include/stdc-predef.h:
+../config.h:
+../confpaths.h:
+/usr/include/paths.h:
+sockets.h:

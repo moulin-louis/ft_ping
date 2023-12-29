@@ -29,39 +29,34 @@
 typedef struct timeval timeval;
 typedef struct sockaddr sockaddr;
 
-
-typedef struct
-{
-  unsigned char icmp_type;		/* type of message, see below */
-  unsigned char icmp_code;		/* type sub code */
-  unsigned short icmp_cksum;		/* ones complement cksum of struct */
-  union
-  {
-    unsigned char ih_pptr;		/* ICMP_PARAMPROB */
-    struct in_addr ih_gwaddr;	/* ICMP_REDIRECT */
-    struct ih_idseq
-    {
+typedef struct {
+  unsigned char icmp_type; /* type of message, see below */
+  unsigned char icmp_code; /* type sub code */
+  unsigned short icmp_cksum; /* ones complement cksum of struct */
+  union {
+    unsigned char ih_pptr; /* ICMP_PARAMPROB */
+    struct in_addr ih_gwaddr; /* ICMP_REDIRECT */
+    struct ih_idseq {
       unsigned short icd_id;
       unsigned short icd_seq;
     } ih_idseq;
+
     int ih_void;
 
     /* ICMP_UNREACH_NEEDFRAG -- Path MTU discovery as per rfc 1191 */
-    struct ih_pmtu
-    {
+    struct ih_pmtu {
       unsigned short ipm_void;
       unsigned short ipm_nextmtu;
     } ih_pmtu;
 
     /* ICMP_ROUTERADV -- RFC 1256 */
-    struct ih_rtradv
-    {
-      unsigned char irt_num_addrs;	/* Number of addresses following the msg */
-      unsigned char irt_wpa;		/* Address Entry Size (32-bit words) */
-      unsigned short irt_lifetime;	/* Lifetime */
+    struct ih_rtradv {
+      unsigned char irt_num_addrs; /* Number of addresses following the msg */
+      unsigned char irt_wpa; /* Address Entry Size (32-bit words) */
+      unsigned short irt_lifetime; /* Lifetime */
     } ih_rtradv;
-
   } icmp_hun;
+
 #define icmp_pptr	icmp_hun.ih_pptr
 #define icmp_gwaddr	icmp_hun.ih_gwaddr
 #define icmp_id		icmp_hun.ih_idseq.icd_id
@@ -73,22 +68,24 @@ typedef struct
 #define icmp_wpa        icmp_hun.ih_rtradv.irt_wpa
 #define icmp_lifetime   icmp_hun.ih_rtradv.irt_lifetime
 
-  union
-  {
-    struct id_ts		/* ICMP_TIMESTAMP, ICMP_TIMESTAMPREPLY */
+  union {
+    struct id_ts /* ICMP_TIMESTAMP, ICMP_TIMESTAMPREPLY */
     {
-      n_time its_otime;		/* Originate timestamp */
-      n_time its_rtime;		/* Recieve timestamp */
-      n_time its_ttime;		/* Transmit timestamp */
+      n_time its_otime; /* Originate timestamp */
+      n_time its_rtime; /* Recieve timestamp */
+      n_time its_ttime; /* Transmit timestamp */
     } id_ts;
-    struct id_ip		/* Original IP header */
+
+    struct id_ip /* Original IP header */
     {
       struct ip idi_ip;
       /* options and then 64 bits of data */
     } id_ip;
-    unsigned long id_mask;		/* ICMP_ADDRESS, ICMP_ADDRESSREPLY */
+
+    unsigned long id_mask; /* ICMP_ADDRESS, ICMP_ADDRESSREPLY */
     char id_data[1];
   } icmp_dun;
+
 #define icmp_otime	icmp_dun.id_ts.its_otime
 #define icmp_rtime	icmp_dun.id_ts.its_rtime
 #define icmp_ttime	icmp_dun.id_ts.its_ttime
@@ -122,10 +119,11 @@ typedef struct {
 } ping_t;
 
 extern ping_t ping;
+extern uint32_t option;
 extern volatile char stop;
 extern bool timeout;
 
-int ping_echo(char* hostname, int option);
+int ping_echo(char* hostname);
 
 double get_diff_time(const timeval* s1, const timeval* s2);
 
@@ -145,6 +143,6 @@ double nsqrt(double a, double prec);
 
 void icmp_error_log();
 
-void icmp_hexdump(void *data, const size_t len);
+void icmp_hexdump(void* data, const size_t len);
 
 #endif //FT_PING_H

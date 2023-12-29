@@ -4,7 +4,7 @@
 
 #include "ft_ping.h"
 
-int option;
+uint32_t option;
 ping_t ping;
 volatile char stop;
 bool timeout;
@@ -96,7 +96,7 @@ int main(const int ac, char** av) {
   for (int32_t idx = 1; idx < ac; idx++) {
     if (av[idx]) {
       ping_init();
-      ping_echo(av[idx], option);
+      ping_echo(av[idx]);
       performed = true;
       break;
     }

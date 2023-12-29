@@ -31,7 +31,7 @@ static void setup_iphdr(struct ip* ip_hdr) {
   ip_hdr->ip_len = htons(sizeof(struct ip) + sizeof(icmphdr));
   ip_hdr->ip_id = ping.num_emit;
   ip_hdr->ip_off = htons(0x4000);
-  ip_hdr->ip_ttl = htons(ping.sys_ttl);
+  ip_hdr->ip_ttl = ping.sys_ttl;
   ip_hdr->ip_p = IPPROTO_ICMP;
   ip_hdr->ip_sum = 0;
   ip_hdr->ip_src.s_addr = 0;
@@ -48,7 +48,7 @@ static int ping_send() {
   return 0;
 }
 
-static int perform_recv(const int option) {
+static int perform_recv() {
   uint8_t buf[1024];
   struct ip* ip = NULL;
   icmphdr* header = NULL;
@@ -67,10 +67,9 @@ static int perform_recv(const int option) {
   ping.datalen = retval;
   retval = icmp_decode(buf, retval, &header, &ip);
   if (retval == -1) {
-    if (option & OPT_VERBOSE) {
+    if (option & OPT_VERBOSE)
       fprintf(stderr, "packet received too short (%zd bytes) from %s\n", retval, ping.ip);
-      icmp_error_log();
-    }
+    icmp_error_log();
     return 2;
   }
   if (header->icmp_type == ICMP_TIMXCEED || header->icmp_type == ICMP_TIME_EXCEEDED) {
@@ -86,17 +85,15 @@ static int perform_recv(const int option) {
   if (header->icmp_type != ICMP_ECHOREPLY)
     return 4;
   if (retval == 1) {
-    if (option & OPT_VERBOSE) {
+    if (option & OPT_VERBOSE)
       fprintf(stderr, "Checksum mismatch from %s\n", ping.ip);
-      icmp_error_log();
-    }
+    icmp_error_log();
     return 5;
   }
   if (ntohs(header->icmp_id) != ping.ident) {
-    if (option & OPT_VERBOSE) {
+    if (option & OPT_VERBOSE)
       fprintf(stderr, "Wrong identifier from %s\n", ping.ip);
-      icmp_error_log();
-    }
+    icmp_error_log();
     return 6;
   }
   ping.recv_ttl = ip->ip_ttl;
@@ -104,12 +101,12 @@ static int perform_recv(const int option) {
   return 0;
 }
 
-static void ping_recv(const int option) {
+static void ping_recv() {
   alarm(MAXWAIT);
   timeout = false;
   signal(SIGALRM, sig_handler);
   while (timeout == false) {
-    const int retval = perform_recv(option);
+    const int retval = perform_recv();
     if (retval == 0)
       break;
     if (retval == 3)
@@ -140,12 +137,13 @@ static void handle_time_wait() {
   }
 }
 
-int ping_echo(char* hostname, const int option) {
+int ping_echo(char* hostname) {
   setup_dest(hostname);
   printf("PING %s (%s): %zu data bytes", ping.hostname, ping.ip, sizeof(icmphdr) + sizeof(struct ip) + 8);
   if (option & OPT_VERBOSE)
     printf(", id=%#x = %u\n", ping.ident, ping.ident);
-  else printf("\n");
+  else
+    printf("\n");
   while (stop == false) {
     icmphdr icmp_header;
     setup_icmp(&icmp_header);
@@ -156,7 +154,7 @@ int ping_echo(char* hostname, const int option) {
     ping.icmp_header = icmp_header;
     gettimeofday(&ping.old_time, NULL);
     ping_send();
-    ping_recv(option);
+    ping_recv();
     handle_time_wait();
   }
   return 0;

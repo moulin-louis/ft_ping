@@ -108,6 +108,8 @@ void icmp_hexdump(void* data, const size_t len) {
 }
 
 void icmp_error_log() {
+  if (!(option & OPT_VERBOSE))
+    return;
   struct ip* ip = (struct ip*)&ping.packet;
   icmphdr* header = (icmphdr*)(ping.packet + sizeof(struct ip));
   size_t hlen = ip->ip_hl << 2;
