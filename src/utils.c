@@ -20,7 +20,7 @@ uint16_t checksum(uint16_t* addr) {
     nleft -= 2;
   }
   if (nleft == 1) {
-    *(uint8_t *)(&answer) = *(uint8_t *)w;
+    *(uint8_t*)(&answer) = *(uint8_t*)w;
     sum += answer;
   }
   sum = (sum >> 16) + (sum & 0xFFFF);
@@ -30,18 +30,18 @@ uint16_t checksum(uint16_t* addr) {
 }
 
 int32_t icmp_decode(const uint8_t* buf, const size_t len, icmphdr** header, struct ip** ip) {
-  struct ip* ip_tmp = (struct ip *)buf;
+  struct ip* ip_tmp = (struct ip*)buf;
   const size_t hlen = ip_tmp->ip_hl << 2;
   if (len < hlen + ICMP_MINLEN) {
     return -1;
   }
 
-  icmphdr* icmp_header = (icmphdr *)(buf + hlen);
+  icmphdr* icmp_header = (icmphdr*)(buf + hlen);
   *header = icmp_header;
   *ip = ip_tmp;
   const uint16_t chksum = (*header)->icmp_cksum;
   (*header)->icmp_cksum = 0;
-  (*header)->icmp_cksum = checksum((uint16_t *)*header);
+  (*header)->icmp_cksum = checksum((uint16_t*)*header);
   if (chksum != (*header)->icmp_cksum)
     return 1;
   return 0;
@@ -68,7 +68,7 @@ int32_t ip_to_hostname(const char* ip, char* result_str) {
   struct sockaddr_in sa;
   sa.sin_family = AF_INET;
   inet_pton(AF_INET, ip, &(sa.sin_addr));
-  const int retval = getnameinfo((struct sockaddr *)&sa, sizeof(sa), result_str, NI_MAXHOST, NULL, 0, 0);
+  const int retval = getnameinfo((struct sockaddr*)&sa, sizeof(sa), result_str, NI_MAXHOST, NULL, 0, 0);
   if (retval != 0)
     return retval;
   return 0;
@@ -102,9 +102,9 @@ double nsqrt(const double a, const double prec) {
   return x1;
 }
 
-void icmp_hexdump(void *data, const size_t len) {
+void icmp_hexdump(void* data, const size_t len) {
   for (size_t j = 0; j < len; ++j)
-    printf ("%02x%s", *((unsigned char *) data + j), (j % 2) ? " " : "");	/* Group bytes two by two.  */
+    printf("%02x%s", *((unsigned char*)data + j), (j % 2) ? " " : ""); /* Group bytes two by two.  */
 }
 
 void icmp_error_log() {
@@ -117,19 +117,18 @@ void icmp_error_log() {
   printf("\n");
   printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src\tDst\tData\n");
   printf(" %1x  %1x  %02x", ip->ip_v, ip->ip_hl, ip->ip_tos);
-  printf (" %04x %04x",
-    (ip->ip_len > 0x2000) ? ntohs (ip->ip_len) : ip->ip_len,
-    ntohs (ip->ip_id));
-  printf ("   %1x %04x", (ntohs (ip->ip_off) & 0xe000) >> 13,
-    ntohs (ip->ip_off) & 0x1fff);
-  printf ("  %02x  %02x %04x", ip->ip_ttl, ip->ip_p, ntohs (ip->ip_sum));
-  printf (" %s ", inet_ntoa(ip->ip_src));
-  printf (" %s ", inet_ntoa (ip->ip_dst));
+  printf(" %04x %04x",
+         (ip->ip_len > 0x2000) ? ntohs(ip->ip_len) : ip->ip_len,
+         ntohs(ip->ip_id));
+  printf("   %1x %04x", (ntohs(ip->ip_off) & 0xe000) >> 13,
+         ntohs(ip->ip_off) & 0x1fff);
+  printf("  %02x  %02x %04x", ip->ip_ttl, ip->ip_p, ntohs(ip->ip_sum));
+  printf(" %s ", inet_ntoa(ip->ip_src));
+  printf(" %s ", inet_ntoa(ip->ip_dst));
   while (hlen-- > sizeof (*ip))
-    printf ("%02x", *cp++);
-  printf ("\n");
-  printf ("ICMP: type %u, code %u, size %lu", header->icmp_type, header->icmp_code, ntohs (ip->ip_len) - hlen);
-  printf (", id 0x%04x, seq 0x%04x", header->icmp_id, header->icmp_seq);
-  printf ("\n");
-
+    printf("%02x", *cp++);
+  printf("\n");
+  printf("ICMP: type %u, code %u, size %lu", header->icmp_type, header->icmp_code, ntohs(ip->ip_len) - hlen);
+  printf(", id 0x%04x, seq 0x%04x", header->icmp_id, header->icmp_seq);
+  printf("\n");
 }

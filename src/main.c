@@ -52,7 +52,7 @@ static void ping_finish(void) {
          ping.num_emit, ping.num_recv, (ping.num_emit - ping.num_recv) * 100 / ping.num_emit);
   if (ping.num_recv)
     printf("round-trip min/avg/max/stddev = %.3f/%.3f/%.3f/%.3f ms\n",
-         ping.min, ping.avg, ping.max, nsqrt(stddev, 0.0005));
+           ping.min, ping.avg, ping.max, nsqrt(stddev, 0.0005));
 }
 
 static void ping_init(void) {
@@ -77,7 +77,6 @@ static void ping_init(void) {
   ping.sys_ttl = ft_atoi(buf);
   if (ping.sys_ttl == -1)
     exit_error("Atoi error");
-
 }
 
 int main(const int ac, char** av) {

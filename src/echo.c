@@ -10,7 +10,7 @@ static int setup_dest(char* hostname) {
   const int retval = hostname_to_sockaddr(ping.hostname, &ping.dest);
   if (retval != 0)
     exit_error(retval == -2 ? "unknown host" : gai_strerror(retval));
-  inet_ntop(AF_INET, &((struct sockaddr_in *)&ping.dest)->sin_addr, ping.ip, INET_ADDRSTRLEN);
+  inet_ntop(AF_INET, &((struct sockaddr_in*)&ping.dest)->sin_addr, ping.ip, INET_ADDRSTRLEN);
   return 0;
 }
 
@@ -21,7 +21,7 @@ static void setup_icmp(icmphdr* hdr) {
   hdr->icmp_id = htons(ping.ident);
   hdr->icmp_seq = htons(ping.num_emit);
   hdr->icmp_cksum = 0;
-  hdr->icmp_cksum = checksum((uint16_t *)hdr);
+  hdr->icmp_cksum = checksum((uint16_t*)hdr);
 }
 
 static void setup_iphdr(struct ip* ip_hdr) {
@@ -36,8 +36,8 @@ static void setup_iphdr(struct ip* ip_hdr) {
   ip_hdr->ip_sum = 0;
   ip_hdr->ip_src.s_addr = 0;
   inet_pton(AF_INET, "0.0.0.0", &ip_hdr->ip_src);
-  ip_hdr->ip_dst = ((struct sockaddr_in *)&ping.dest)->sin_addr;
-  ip_hdr->ip_sum = checksum((uint16_t *)ip_hdr);
+  ip_hdr->ip_dst = ((struct sockaddr_in*)&ping.dest)->sin_addr;
+  ip_hdr->ip_sum = checksum((uint16_t*)ip_hdr);
 }
 
 static int ping_send() {
@@ -122,7 +122,8 @@ static void ping_recv(const int option) {
     ping.num_rept += 1;
     return;
   }
-  printf("%zu bytes from %s: icmp_seq=%zu ttl=%d time=%.3f ms\n", ping.datalen, ping.ip, ping.num_emit - 1, ping.recv_ttl,
+  printf("%zu bytes from %s: icmp_seq=%zu ttl=%d time=%.3f ms\n", ping.datalen, ping.ip, ping.num_emit - 1,
+         ping.recv_ttl,
          get_diff_time(&ping.old_time, &ping.current_time));
 }
 
