@@ -108,6 +108,9 @@ void icmp_hexdump(void* data, const size_t len) {
 }
 
 void icmp_error_log() {
+  char src_str[INET_ADDRSTRLEN];
+  char dst_str[INET_ADDRSTRLEN];
+
   if (!(option & OPT_VERBOSE))
     return;
   struct ip* ip = (struct ip*)&ping.packet;
@@ -125,12 +128,18 @@ void icmp_error_log() {
   printf("   %1x %04x", (ntohs(ip->ip_off) & 0xe000) >> 13,
          ntohs(ip->ip_off) & 0x1fff);
   printf("  %02x  %02x %04x", ip->ip_ttl, ip->ip_p, ntohs(ip->ip_sum));
-  printf(" %s ", inet_ntoa(ip->ip_src));
-  printf(" %s ", inet_ntoa(ip->ip_dst));
+  inet_ntop(AF_INET, &ip->ip_src, src_str, INET_ADDRSTRLEN);
+
+  printf(" %s ", src_str);
+  inet_ntop(AF_INET, &ip->ip_dst, dst_str, INET_ADDRSTRLEN);
+  printf(" %s ", dst_str);
   while (hlen-- > sizeof (*ip))
     printf("%02x", *cp++);
   printf("\n");
   printf("ICMP: type %u, code %u, size %lu", header->icmp_type, header->icmp_code, ntohs(ip->ip_len) - hlen);
   printf(", id 0x%04x, seq 0x%04x", header->icmp_id, header->icmp_seq);
   printf("\n");
+
+  printf("hexdump ip src:\n");
+  hexdump((uint8_t*)&ip->ip_src, sizeof(ip->ip_src), 0);
 }

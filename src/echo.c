@@ -57,7 +57,6 @@ static int perform_recv() {
   ft_memset(&ping.msg, 0, sizeof(ping.msg));
   ping.msg.msg_iov = &iov;
   ping.msg.msg_iovlen = 1;
-  *__errno_location() = 0;
   ssize_t retval = recvmsg(ping.fd, &ping.msg, MSG_DONTWAIT);
   if (retval == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK)
