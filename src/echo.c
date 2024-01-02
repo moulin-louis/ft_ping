@@ -60,25 +60,23 @@ static int perform_recv() {
   ssize_t retval = recvmsg(ping.fd, &ping.msg, MSG_DONTWAIT);
   if (retval == -1) {
     if (errno == EAGAIN || errno == EWOULDBLOCK)
-      return -1;
+      return 1;
     exit_error(NULL);
   }
   ping.datalen = retval;
   retval = icmp_decode(buf, retval, &header, &ip);
-  if (retval == -1) {
-    if (option & OPT_VERBOSE)
-      fprintf(stderr, "packet received too short (%zd bytes) from %s\n", retval, ping.ip);
-    icmp_error_log();
-    return 2;
+  if (retval == -1 || retval == 1 || ntohs(header->icmp_id) != ping.ident || header->icmp_type == ICMP_TIME_EXCEEDED ||
+    header->icmp_type != ICMP_ECHOREPLY) {
+    printf("%zu bytes from %s: type = %u, code = %u\n", ping.datalen, ping.ip, header->icmp_type, header->icmp_code);
+    return 1;
   }
-  if (header->icmp_type == ICMP_TIMXCEED || header->icmp_type == ICMP_TIME_EXCEEDED) {
+  if (header->icmp_type == ICMP_TIME_EXCEEDED) {
     char ip_src[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &ip->ip_src, ip_src, INET_ADDRSTRLEN);
     char hostname_src[NI_MAXHOST];
 
     ip_to_hostname(ip_src, hostname_src);
     fprintf(stderr, "%zu bytes from %s (%s): Time to live exceeded\n", ping.datalen, hostname_src, ip_src);
-    icmp_error_log();
     return 3;
   }
   if (header->icmp_type != ICMP_ECHOREPLY)
@@ -86,13 +84,11 @@ static int perform_recv() {
   if (retval == 1) {
     if (option & OPT_VERBOSE)
       fprintf(stderr, "Checksum mismatch from %s\n", ping.ip);
-    icmp_error_log();
     return 5;
   }
   if (ntohs(header->icmp_id) != ping.ident) {
     if (option & OPT_VERBOSE)
       fprintf(stderr, "Wrong identifier from %s\n", ping.ip);
-    icmp_error_log();
     return 6;
   }
   ping.recv_ttl = ip->ip_ttl;
