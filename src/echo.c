@@ -24,21 +24,21 @@ static void setup_icmp(icmphdr* hdr) {
   hdr->icmp_cksum = checksum((uint16_t*)hdr);
 }
 
-static void setup_iphdr(struct ip* ip_hdr) {
-  ip_hdr->ip_v = 4;
-  ip_hdr->ip_hl = 5;
-  ip_hdr->ip_tos = 0;
-  ip_hdr->ip_len = htons(sizeof(struct ip) + sizeof(icmphdr));
-  ip_hdr->ip_id = ping.num_emit;
-  ip_hdr->ip_off = htons(0x4000);
-  ip_hdr->ip_ttl = ping.sys_ttl;
-  ip_hdr->ip_p = IPPROTO_ICMP;
-  ip_hdr->ip_sum = 0;
-  ip_hdr->ip_src.s_addr = 0;
-  inet_pton(AF_INET, "0.0.0.0", &ip_hdr->ip_src);
-  ip_hdr->ip_dst = ((struct sockaddr_in*)&ping.dest)->sin_addr;
-  ip_hdr->ip_sum = checksum((uint16_t*)ip_hdr);
-}
+// static void setup_iphdr(struct ip* ip_hdr) {
+// ip_hdr->ip_v = 4;
+// ip_hdr->ip_hl = 5;
+// ip_hdr->ip_tos = 0;
+// ip_hdr->ip_len = htons(sizeof(struct ip) + sizeof(icmphdr));
+// ip_hdr->ip_id = ping.num_emit;
+// ip_hdr->ip_off = htons(0x4000);
+// ip_hdr->ip_ttl = ping.sys_ttl;
+// ip_hdr->ip_p = IPPROTO_ICMP;
+// ip_hdr->ip_sum = 0;
+// ip_hdr->ip_src.s_addr = 0;
+// inet_pton(AF_INET, "0.0.0.0", &ip_hdr->ip_src);
+// ip_hdr->ip_dst = ((struct sockaddr_in*)&ping.dest)->sin_addr;
+// ip_hdr->ip_sum = checksum((uint16_t*)ip_hdr);
+// }
 
 static int ping_send() {
   const ssize_t retval = sendto(ping.fd, ping.packet, sizeof(ping.packet), 0, &ping.dest, sizeof(ping.dest));
@@ -68,28 +68,7 @@ static int perform_recv() {
   if (retval == -1 || retval == 1 || ntohs(header->icmp_id) != ping.ident || header->icmp_type == ICMP_TIME_EXCEEDED ||
     header->icmp_type != ICMP_ECHOREPLY) {
     printf("%zu bytes from %s: type = %u, code = %u\n", ping.datalen, ping.ip, header->icmp_type, header->icmp_code);
-    return 1;
-  }
-  if (header->icmp_type == ICMP_TIME_EXCEEDED) {
-    char ip_src[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &ip->ip_src, ip_src, INET_ADDRSTRLEN);
-    char hostname_src[NI_MAXHOST];
-
-    ip_to_hostname(ip_src, hostname_src);
-    fprintf(stderr, "%zu bytes from %s (%s): Time to live exceeded\n", ping.datalen, hostname_src, ip_src);
-    return 3;
-  }
-  if (header->icmp_type != ICMP_ECHOREPLY)
-    return 4;
-  if (retval == 1) {
-    if (option & OPT_VERBOSE)
-      fprintf(stderr, "Checksum mismatch from %s\n", ping.ip);
-    return 5;
-  }
-  if (ntohs(header->icmp_id) != ping.ident) {
-    if (option & OPT_VERBOSE)
-      fprintf(stderr, "Wrong identifier from %s\n", ping.ip);
-    return 6;
+    return 2;
   }
   ping.recv_ttl = ip->ip_ttl;
   ping.num_recv += 1;
@@ -97,14 +76,14 @@ static int perform_recv() {
 }
 
 static void ping_recv() {
-  alarm(MAXWAIT);
-  timeout = false;
   signal(SIGALRM, sig_handler);
+  timeout = false;
+  alarm(MAXWAIT);
   while (timeout == false) {
     const int retval = perform_recv();
     if (retval == 0)
       break;
-    if (retval == 3)
+    if (retval == 2)
       return;
   }
   gettimeofday(&ping.current_time, NULL);
@@ -142,11 +121,12 @@ int ping_echo(char* hostname) {
   while (stop == false) {
     icmphdr icmp_header;
     setup_icmp(&icmp_header);
-    struct ip ip_hdr;
-    setup_iphdr(&ip_hdr);
-    memcpy(ping.packet, &ip_hdr, sizeof(ip_hdr));
-    memcpy(ping.packet + sizeof(ip_hdr), &icmp_header, sizeof(icmp_header));
-    ping.icmp_header = icmp_header;
+    // struct ip ip_hdr;
+    // setup_iphdr(&ip_hdr);
+    // memcpy(ping.packet, &ip_hdr, sizeof(ip_hdr));
+    memcpy(ping.packet, &icmp_header, sizeof(icmp_header));
+    // memcpy(ping.packet + sizeof(ip_hdr), &icmp_header, sizeof(icmp_header));
+    // ping.icmp_header = icmp_header;
     gettimeofday(&ping.old_time, NULL);
     ping_send();
     ping_recv();

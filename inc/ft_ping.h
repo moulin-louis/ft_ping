@@ -20,10 +20,9 @@
 
 #define ICMP_MINLEN 8
 #define ICMP_ECHO 8
-#define ICMP_TIMXCEED 11
 #define ICMP_TIME_EXCEEDED 11
 #define ICMP_ECHOREPLY 0
-#define MAXWAIT 1 // max time to wait for a packet
+#define MAXWAIT 1 // max time to wait for a packet in seconds
 #define OPT_VERBOSE 0x020 // verbose option
 
 typedef struct timeval timeval;
@@ -57,11 +56,11 @@ typedef struct {
     } ih_rtradv;
   } icmp_hun;
 
-#define icmp_pptr	icmp_hun.ih_pptr
-#define icmp_gwaddr	icmp_hun.ih_gwaddr
-#define icmp_id		icmp_hun.ih_idseq.icd_id
-#define icmp_seq	icmp_hun.ih_idseq.icd_seq
-#define icmp_void	icmp_hun.ih_void
+#define icmp_pptr	      icmp_hun.ih_pptr
+#define icmp_gwaddr	    icmp_hun.ih_gwaddr
+#define icmp_id		      icmp_hun.ih_idseq.icd_id
+#define icmp_seq	      icmp_hun.ih_idseq.icd_seq
+#define icmp_void	      icmp_hun.ih_void
 #define icmp_pmvoid     icmp_hun.ih_pmtu.ipm_void
 #define icmp_nextmtu    icmp_hun.ih_pmtu.ipm_nextmtu
 #define icmp_num_addrs  icmp_hun.ih_rtradv.irt_num_addrs
@@ -89,16 +88,15 @@ typedef struct {
 #define icmp_otime	icmp_dun.id_ts.its_otime
 #define icmp_rtime	icmp_dun.id_ts.its_rtime
 #define icmp_ttime	icmp_dun.id_ts.its_ttime
-#define icmp_ip		icmp_dun.id_ip.idi_ip
-#define icmp_mask	icmp_dun.id_mask
-#define icmp_data	icmp_dun.id_data
+#define icmp_ip		  icmp_dun.id_ip.idi_ip
+#define icmp_mask	  icmp_dun.id_mask
+#define icmp_data	  icmp_dun.id_data
 } icmphdr;
 
 typedef struct {
   int fd; // file descriptor of the socket
   uint16_t ident; // identifier for the icmp header
   sockaddr dest; // destination of the packet
-  sockaddr srcl; // source of the packet
   char* hostname; // hostname of the destination in string format
   char ip[INET_ADDRSTRLEN]; // ip address of the destination in string format
   struct msghdr msg; // message received for rcvmsg
@@ -107,7 +105,7 @@ typedef struct {
   int32_t recv_ttl; // time to live in the packet header received
   timeval current_time; // current time
   timeval old_time; // time before sending the packet
-  icmphdr icmp_header; // icmp header
+  // icmphdr icmp_header; // icmp header
   uint8_t packet[sizeof(icmphdr) + sizeof(struct ip) + 8];
   double min; // min of the diffMS
   double max; // max of the diffMS

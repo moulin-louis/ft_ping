@@ -63,8 +63,8 @@ static void ping_init(void) {
   if (setsockopt(ping.fd, SOL_SOCKET,SO_BROADCAST, &ph, sizeof(ph))) //enable broadcast
     exit_error(NULL);
   //enable ip header
-  if (setsockopt(ping.fd, IPPROTO_IP, IP_HDRINCL, &ph, sizeof(ph))) //enable ip header
-    exit_error(NULL);
+  // if (setsockopt(ping.fd, IPPROTO_IP, IP_HDRINCL, &ph, sizeof(ph))) //enable ip header
+    // exit_error(NULL);
   const int32_t fd = open("/proc/sys/net/ipv4/ip_default_ttl", O_RDONLY); //get ttl
   if (fd < 0)
     exit_error(NULL);
