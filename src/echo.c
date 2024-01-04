@@ -24,22 +24,6 @@ static void setup_icmp(icmphdr* hdr) {
   hdr->icmp_cksum = checksum((uint16_t*)hdr);
 }
 
-// static void setup_iphdr(struct ip* ip_hdr) {
-// ip_hdr->ip_v = 4;
-// ip_hdr->ip_hl = 5;
-// ip_hdr->ip_tos = 0;
-// ip_hdr->ip_len = htons(sizeof(struct ip) + sizeof(icmphdr));
-// ip_hdr->ip_id = ping.num_emit;
-// ip_hdr->ip_off = htons(0x4000);
-// ip_hdr->ip_ttl = ping.sys_ttl;
-// ip_hdr->ip_p = IPPROTO_ICMP;
-// ip_hdr->ip_sum = 0;
-// ip_hdr->ip_src.s_addr = 0;
-// inet_pton(AF_INET, "0.0.0.0", &ip_hdr->ip_src);
-// ip_hdr->ip_dst = ((struct sockaddr_in*)&ping.dest)->sin_addr;
-// ip_hdr->ip_sum = checksum((uint16_t*)ip_hdr);
-// }
-
 static int ping_send() {
   const ssize_t retval = sendto(ping.fd, ping.packet, sizeof(ping.packet), 0, &ping.dest, sizeof(ping.dest));
   if (retval < 0)
@@ -121,12 +105,7 @@ int ping_echo(char* hostname) {
   while (stop == false) {
     icmphdr icmp_header;
     setup_icmp(&icmp_header);
-    // struct ip ip_hdr;
-    // setup_iphdr(&ip_hdr);
-    // memcpy(ping.packet, &ip_hdr, sizeof(ip_hdr));
     memcpy(ping.packet, &icmp_header, sizeof(icmp_header));
-    // memcpy(ping.packet + sizeof(ip_hdr), &icmp_header, sizeof(icmp_header));
-    // ping.icmp_header = icmp_header;
     gettimeofday(&ping.old_time, NULL);
     ping_send();
     ping_recv();

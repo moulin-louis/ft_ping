@@ -5,7 +5,10 @@
 #ifndef FT_PING_H
 #define FT_PING_H
 
-#include <libft.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -17,6 +20,7 @@
 # include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <fcntl.h>
+#include <libft.h>
 
 #define ICMP_MINLEN 8
 #define ICMP_ECHO 8

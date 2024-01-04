@@ -32,10 +32,10 @@ uint16_t checksum(uint16_t* addr) {
 int32_t icmp_decode(const uint8_t* buf, const size_t len, icmphdr** header, struct ip** ip) {
   struct ip* ip_tmp = (struct ip*)buf;
   const size_t hlen = ip_tmp->ip_hl << 2;
+
   if (len < hlen + ICMP_MINLEN) {
     return -1;
   }
-
   icmphdr* icmp_header = (icmphdr*)(buf + hlen);
   *header = icmp_header;
   *ip = ip_tmp;
