@@ -49,9 +49,9 @@ static int perform_recv() {
   }
   ping.datalen = retval;
   retval = icmp_decode(buf, retval, &header, &ip);
-  if (retval == -1 || retval == 1 || ntohs(header->icmp_id) != ping.ident || header->icmp_type == ICMP_TIME_EXCEEDED ||
-    header->icmp_type != ICMP_ECHOREPLY) {
-    printf("%zu bytes from %s: type = %u, code = %u\n", ping.datalen, ping.ip, header->icmp_type, header->icmp_code);
+  if (retval == -1 || retval == 1 || ntohs(header->icmp_id) != ping.ident || header->icmp_type == ICMP_TIME_EXCEEDED || header->icmp_type != ICMP_ECHOREPLY) {
+    if (option & OPT_VERBOSE)
+      printf("%zu bytes from %s: type = %u, code = %u\n", ping.datalen, ping.ip, header->icmp_type, header->icmp_code);
     return 2;
   }
   ping.recv_ttl = ip->ip_ttl;
