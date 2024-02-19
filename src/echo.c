@@ -15,7 +15,7 @@ static int setup_dest(char* hostname) {
 }
 
 static void setup_icmp(icmphdr* hdr) {
-  ft_memset(hdr, 0, sizeof(*hdr));
+  memset(hdr, 0, sizeof(*hdr));
   hdr->icmp_type = ICMP_ECHO;
   hdr->icmp_code = 0;
   hdr->icmp_id = htons(ping.ident);
@@ -38,7 +38,7 @@ static int perform_recv() {
   icmphdr* header = NULL;
   struct iovec iov = {.iov_base = buf, .iov_len = sizeof(buf)};
 
-  ft_memset(&ping.msg, 0, sizeof(ping.msg));
+  memset(&ping.msg, 0, sizeof(ping.msg));
   ping.msg.msg_iov = &iov;
   ping.msg.msg_iovlen = 1;
   ssize_t retval = recvmsg(ping.fd, &ping.msg, MSG_DONTWAIT);

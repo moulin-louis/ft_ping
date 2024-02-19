@@ -20,7 +20,8 @@
 # include <netinet/in_systm.h>
 #include <netinet/ip.h>
 #include <fcntl.h>
-#include <libft.h>
+
+#include "libft.h"
 
 #define ICMP_MINLEN 8
 #define ICMP_ECHO 8
@@ -145,6 +146,6 @@ double nsqrt(double a, double prec);
 
 void icmp_error_log();
 
-void icmp_hexdump(void* data, const size_t len);
+void icmp_hexdump(void* data, size_t len);
 
 #endif //FT_PING_H

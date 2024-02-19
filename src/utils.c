@@ -52,13 +52,13 @@ int32_t hostname_to_sockaddr(const char* hostname, void* result_ptr) {
   struct addrinfo hints;
   struct addrinfo* result;
 
-  ft_memset(&hints, 0, sizeof(hints));
+  memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_RAW;
   const int retval = getaddrinfo(hostname, NULL, &hints, &result);
   if (retval != 0)
     return retval;
-  ft_memcpy(result_ptr, result->ai_addr, result->ai_addrlen);
+  memcpy(result_ptr, result->ai_addr, result->ai_addrlen);
   freeaddrinfo(result);
   return 0;
 }

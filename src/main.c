@@ -32,11 +32,11 @@ static void display_help() {
 
 static int parse_arg(char** av) {
   for (uint32_t idx = 1; av[idx]; idx++) {
-    if (ft_strcmp(av[idx], "-?") == 0 || ft_strcmp(av[idx], "--help") == 0) {
+    if (strcmp(av[idx], "-?") == 0 || strcmp(av[idx], "--help") == 0) {
       display_help();
       return 1;
     }
-    if (ft_strcmp(av[idx], "-v") == 0 || ft_strcmp(av[idx], "--verbose") == 0) {
+    if (strcmp(av[idx], "-v") == 0 || strcmp(av[idx], "--verbose") == 0) {
       av[idx] = NULL;
       option |= OPT_VERBOSE;
     }
@@ -71,7 +71,7 @@ static void ping_init(void) {
   if (len < 0)
     exit_error(NULL);
   buf[len] = 0;
-  ping.sys_ttl = ft_atoi(buf); //convert ttl to int
+  ping.sys_ttl = atoi(buf); //convert ttl to int
   if (ping.sys_ttl == -1)
     exit_error("Atoi error");
 }
@@ -82,7 +82,7 @@ int main(const int ac, char** av) {
     fprintf(stderr, "Try 'ft_ping -?' for more information.\n");
     return 1;
   }
-  ft_memset(&ping, 0, sizeof(ping));
+  memset(&ping, 0, sizeof(ping));
   ping.min = MAXWAIT + 10;
   const int retval = parse_arg(av);
   if (retval == 1)
