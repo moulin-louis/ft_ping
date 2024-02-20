@@ -8,4 +8,4 @@ through the IP network.
 - The command measures also the time taken to receive a response,
 called round-trip time.
 ## Note:
-- TBD
+- 100/100
